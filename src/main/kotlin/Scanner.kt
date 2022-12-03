@@ -58,6 +58,14 @@ class Scanner(private val source: String) {
             '/' -> {
                 if (match('/')) {
                     while (peek() != '\n' && !isAtEnd()) advance() // comment
+                } else if (match('*')) { // block comment
+                    while ( !( peek() == '*' && peekNext() == '/' ) ) {
+                        advance()
+                        if (isAtEnd()) {
+                            error(line, "Block comment can not match */ ")
+                            return
+                        }
+                    }
                 } else {
                     addToken(TokenType.SLASH)
                 }
@@ -136,9 +144,8 @@ class Scanner(private val source: String) {
             advance()
         val text = source.substring(start, current)
         var type = keywords[text]
-        type?.let {
+        if (type == null)
             type = TokenType.IDENTIFIER
-        }
-        addToken(type!!)
+        addToken(type)
     }
 }
