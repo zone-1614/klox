@@ -37,8 +37,7 @@ class Scanner(private val source: String) {
     private fun isAtEnd(): Boolean = current >= source.length
 
     private fun scanToken() {
-        val c: Char = advance()
-        when (c) {
+        when (val c: Char = advance()) {
             '(' -> addToken(TokenType.LEFT_PAREN)
             ')' -> addToken(TokenType.RIGHT_PAREN)
             '{' -> addToken(TokenType.LEFT_BRACE)
