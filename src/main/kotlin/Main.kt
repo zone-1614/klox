@@ -1,6 +1,5 @@
 import java.io.BufferedReader
 import java.io.InputStreamReader
-import java.nio.charset.Charset
 import java.nio.file.Files
 import java.nio.file.Paths
 import kotlin.system.exitProcess
@@ -16,13 +15,18 @@ fun main(args: Array<String>) {
     }
 }
 
+val interpreter = Interpreter()
 var hadError = false
+var hadRuntimeError = false
 
 private fun runFile(path: String) {
     val bytes = Files.readAllBytes(Paths.get(path))
 //    run(String(bytes), Charset.defaultCharset())
+    run(String(bytes))
     if (hadError)
         exitProcess(65)
+    if (hadRuntimeError)
+        exitProcess(70)
 }
 
 private fun runPrompt() {
@@ -45,7 +49,8 @@ private fun run(source: String) {
     val expression = parser.parse()
     if (expression == null) return
     if (hadError) return
-    println(AstPrinter().print(expression))
+    interpreter.interpret(expression)
+//    println(AstPrinter().print(expression))
 }
 
 fun error(line: Int, message: String) {
@@ -63,4 +68,9 @@ private fun error(token: Token, message: String) {
     } else {
         report(token.line, "at '${token.lexeme}'", message)
     }
+}
+
+fun runtimeError(error: RuntimeError) {
+    println("${error.message}\n[line ${error.token.line}]")
+    hadRuntimeError = true
 }
