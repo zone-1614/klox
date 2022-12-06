@@ -53,7 +53,7 @@ class Interpreter: Expr.Visitor<Any?> {
         }
     }
 
-    override fun visitGroupingExpr(expr: Expr.Companion.Grouping) = evaluate(expr)
+    override fun visitGroupingExpr(expr: Expr.Companion.Grouping) = evaluate(expr.expression)
 
     override fun visitLiteralExpr(expr: Expr.Companion.Literal) = expr.value
 
