@@ -10,10 +10,19 @@ fun main(args: Array<String>) {
     }
     val outputDir = args[0]
     defineAst(outputDir, "Expr", listOf(
+        "Assign - name: Token, value: Expr",
         "Binary - left: Expr, operator: Token, right: Expr",
         "Grouping - expression: Expr",
         "Literal - value: Any?",
-        "Unary - operator: Token, right: Expr"
+        "Unary - operator: Token, right: Expr",
+        "Variable - name: Token"
+    ))
+
+    defineAst(outputDir, "Stmt", listOf(
+        "Block - statements: List<Stmt?>",
+        "Expression - expression: Expr",
+        "Print - expression: Expr",
+        "Var - name: Token, initializer: Expr?"
     ))
 }
 
@@ -51,7 +60,11 @@ private fun defineType(
     writer.apply {
         println("\t\tclass $className(")
         for (field in fieldList) {
-            println("\t\t\tval ${field.trim()},")
+            print("\t\t\tval ${field.trim()}")
+            if (field != fieldList.last()) {
+                print(",")
+            }
+            println()
         }
         println("\t\t): $baseName() {")
         println("\t\t\toverride fun <R> accept(visitor: Visitor<R>): R {")

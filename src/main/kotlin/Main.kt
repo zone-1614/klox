@@ -46,10 +46,10 @@ private fun run(source: String) {
     val scanner = Scanner(source)
     val tokens = scanner.scanTokens()
     val parser = Parser(tokens)
-    val expression = parser.parse()
-    if (expression == null) return
+    val statements = parser.parse()
+
     if (hadError) return
-    interpreter.interpret(expression)
+    interpreter.interpret(statements)
 //    println(AstPrinter().print(expression))
 }
 

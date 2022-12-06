@@ -3,18 +3,81 @@ import java.lang.RuntimeException
 class Parser(private val tokens: List<Token>) {
     private var current: Int = 0
 
-    fun parse(): Expr? {
-        return try {
-            expression()
-        } catch (e: ParseError) {
-            null
+    fun parse(): List<Stmt?> {
+        val statements = arrayListOf<Stmt?>()
+        while (!isAtEnd()) {
+            statements.add(declaration())
         }
+        return statements
     }
 
     /**
-     * expression -> equality
+     * expression -> assignment
      */
-    private fun expression(): Expr = equality()
+    private fun expression(): Expr = assignment()
+
+    private fun declaration(): Stmt? {
+        try {
+            if (match(TokenType.VAR))
+                return varDeclaration()
+            return statement()
+        } catch (error: ParseError) {
+            synchronize()
+            return null
+        }
+    }
+
+    private fun statement(): Stmt {
+        if (match(TokenType.PRINT))
+            return printStatement()
+        if (match(TokenType.LEFT_BRACE))
+            return Stmt.Companion.Block(block())
+        return expressionStatement()
+    }
+
+    private fun printStatement(): Stmt {
+        val value = expression()
+        consume(TokenType.SEMICOLON, "Expect ';' after value. ")
+        return Stmt.Companion.Print(value)
+    }
+
+    private fun varDeclaration(): Stmt {
+        val name = consume(TokenType.IDENTIFIER, "Expect variable name. ")
+        var initializer: Expr? = null
+        if (match(TokenType.EQUAL))
+            initializer = expression()
+        consume(TokenType.SEMICOLON, "Expect ';' after variable declaration. ")
+        return Stmt.Companion.Var(name, initializer)
+    }
+
+    private fun expressionStatement(): Stmt {
+        val expr = expression()
+        consume(TokenType.SEMICOLON, "Expect ';' after expression. ")
+        return Stmt.Companion.Expression(expr)
+    }
+
+    private fun block(): List<Stmt?> {
+        val statements = arrayListOf<Stmt?>()
+        while (!check(TokenType.RIGHT_BRACE) && !isAtEnd()) {
+            statements.add(declaration())
+        }
+        consume(TokenType.RIGHT_BRACE, "Except '}' after block. ")
+        return statements
+    }
+
+    private fun assignment(): Expr {
+        val expr = equality()
+        if (match(TokenType.EQUAL)) {
+            val equals = previous()
+            val value = assignment()
+            if (expr is Expr.Companion.Variable) { // is l-value ?
+                val name = expr.name
+                return Expr.Companion.Assign(name, value)
+            }
+            error(equals, "Invalid assignment target. ") // r-value
+        }
+        return expr
+    }
 
     /**
      * equality -> comparison ( ( "!=" | "==" ) comparison )*
@@ -93,6 +156,8 @@ class Parser(private val tokens: List<Token>) {
             return Expr.Companion.Literal(null)
         if (match(TokenType.NUMBER, TokenType.STRING))
             return Expr.Companion.Literal(previous().literal)
+        if (match(TokenType.IDENTIFIER))
+            return Expr.Companion.Variable(previous())
         if (match(TokenType.LEFT_PAREN)) {
             val expr = expression()
             consume(TokenType.RIGHT_PAREN, "Except ')' after expression. ")

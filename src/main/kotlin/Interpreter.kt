@@ -1,11 +1,18 @@
-class Interpreter: Expr.Visitor<Any?> {
-    fun interpret(expression: Expr) {
+class Interpreter: Expr.Visitor<Any?>, Stmt.Visitor<Unit> {
+    private var environment = Environment()
+    fun interpret(statements: List<Stmt?>) {
         try {
-            val value = evaluate(expression)
-            println(stringify(value))
+            for (stmt in statements)
+                execute(stmt)
         } catch (error: RuntimeError) {
             runtimeError(error)
         }
+    }
+
+    override fun visitAssignExpr(expr: Expr.Companion.Assign): Any? {
+        val value = evaluate(expr.value)
+        environment.assign(expr.name, value)
+        return value
     }
 
     override fun visitBinaryExpr(expr: Expr.Companion.Binary): Any? {
@@ -69,6 +76,10 @@ class Interpreter: Expr.Visitor<Any?> {
         }
     }
 
+    override fun visitVariableExpr(expr: Expr.Companion.Variable): Any? {
+        return environment.get(expr.name)
+    }
+
     private fun checkNumberOperand(operator: Token, operand: Any?) {
         if (operand is Double) return
         throw RuntimeError(operator, "Operand must be a number. ")
@@ -104,4 +115,39 @@ class Interpreter: Expr.Visitor<Any?> {
     }
 
     private fun evaluate(expr: Expr) = expr.accept(this)
+
+    private fun execute(stmt: Stmt?) = stmt?.accept(this)
+
+    private fun executeBlock(stmts: List<Stmt?>, environment: Environment) {
+        val previous = this.environment
+        try {
+            this.environment = environment
+            for (stmt in stmts) {
+                execute(stmt)
+            }
+        } finally {
+            this.environment = previous
+        }
+    }
+    override fun visitBlockStmt(stmt: Stmt.Companion.Block) {
+        executeBlock(stmt.statements, Environment(environment))
+    }
+
+    override fun visitExpressionStmt(stmt: Stmt.Companion.Expression) {
+        evaluate(stmt.expression)
+    }
+
+    override fun visitPrintStmt(stmt: Stmt.Companion.Print) {
+        val value = evaluate(stmt.expression)
+        println(stringify(value))
+    }
+
+    override fun visitVarStmt(stmt: Stmt.Companion.Var) {
+        var value: Any? = null
+        if (stmt.initializer != null) {
+            value = evaluate(stmt.initializer)
+        }
+        environment.define(stmt.name.lexeme, value)
+    }
+
 }
