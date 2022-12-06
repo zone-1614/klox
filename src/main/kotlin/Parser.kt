@@ -111,8 +111,8 @@ class Parser(private val tokens: List<Token>) {
         return false
     }
 
-    private fun consume(type: TokenType, message: String) {
-        if (check(type)) advance()
+    private fun consume(type: TokenType, message: String): Token {
+        if (check(type)) return advance()
         throw error(peek(), message)
     }
 

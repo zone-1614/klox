@@ -1,3 +1,5 @@
+import java.io.BufferedReader
+import java.io.InputStreamReader
 import kotlin.text.StringBuilder
 
 class AstPrinter: Expr.Visitor<String> {
@@ -22,10 +24,26 @@ class AstPrinter: Expr.Visitor<String> {
 }
 
 fun main() {
-    val expr = Expr.Companion.Binary(
-        Expr.Companion.Unary(Token(TokenType.MINUS, "-", null, 1), Expr.Companion.Literal(123)),
-        Token(TokenType.STAR, "*", null, 1),
-        Expr.Companion.Grouping(Expr.Companion.Literal(23.23))
-    )
-    println(AstPrinter().print(expr))
+//    val expr = Expr.Companion.Binary(
+//        Expr.Companion.Unary(Token(TokenType.MINUS, "-", null, 1), Expr.Companion.Literal(123)),
+//        Token(TokenType.STAR, "*", null, 1),
+//        Expr.Companion.Grouping(Expr.Companion.Literal(23.23))
+//    )
+//    println(AstPrinter().print(expr))
+    val input = InputStreamReader(System.`in`)
+    val reader = BufferedReader(input)
+    while (true) {
+        print("> ")
+        val line = reader.readLine()
+        if (line == null) {
+            println("no input, exit")
+            break
+        }
+        val scanner = Scanner(line)
+        val tokens = scanner.scanTokens()
+        println(tokens)
+        val parser = Parser(tokens)
+        val expr = parser.parse()
+        println(AstPrinter().print(expr!!))
+    }
 }
