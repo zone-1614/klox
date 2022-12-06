@@ -133,8 +133,8 @@ class Parser(private val tokens: List<Token>) {
 
     private fun previous() = tokens[current-1]
 
-    private fun error(type: Token, message: String): ParseError {
-        error(type, message)
+    private fun error(token: Token, message: String): ParseError {
+        error1(token, message)
         return ParseError()
     }
 

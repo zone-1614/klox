@@ -62,7 +62,7 @@ private fun report(line: Int, where: String, message: String) {
     hadError = true
 }
 
-private fun error(token: Token, message: String) {
+fun error1(token: Token, message: String) {
     if (token.type == TokenType.EOF) {
         report(token.line, "at end", message)
     } else {
