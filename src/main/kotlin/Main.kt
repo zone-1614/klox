@@ -14,7 +14,13 @@ fun main(args: Array<String>) {
         runPrompt()
     }
 }
+/*
 
+var a = true;
+if (a) { print "hehe"; }
+var b = 1;
+while (b < 3) { b = b + 1; for (var k = 0; k < 3; k = k + 1) { print k; print k + b; } print "-----"; }
+ */
 val interpreter = Interpreter()
 var hadError = false
 var hadRuntimeError = false
