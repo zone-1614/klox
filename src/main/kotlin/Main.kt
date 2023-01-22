@@ -42,7 +42,7 @@ private fun runPrompt() {
         print("> ")
         val line = reader.readLine()
         if (line == null)
-            break;
+            break
         run(line)
         hadError = false
     }
